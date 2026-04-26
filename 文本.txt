@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>植物守卫战</title>
+<style>
+  canvas { background: #222; display:block; margin:auto; }
+</style>
+</head>
+<body>
+
+<canvas id="game" width="800" height="400"></canvas>
+
+<script>
+const canvas = document.getElementById("game");
+const ctx = canvas.getContext("2d");
+
+let plants = [];
+let enemies = [];
+let bullets = [];
+
+canvas.addEventListener("click", e => {
+    plants.push({x: e.offsetX, y: e.offsetY, cooldown: 0});
+});
+
+function spawnEnemy(){
+    enemies.push({x: 800, y: Math.random()*350, hp: 100});
+}
+setInterval(spawnEnemy, 2000);
+
+function gameLoop(){
+    ctx.clearRect(0,0,800,400);
+
+    // plants
+    plants.forEach(p=>{
+        ctx.fillStyle = "green";
+        ctx.fillRect(p.x, p.y, 20, 20);
+
+        if(p.cooldown <= 0){
+            bullets.push({x:p.x, y:p.y+10});
+            p.cooldown = 50;
+        }
+        p.cooldown--;
+    });
+
+    // bullets
+    bullets.forEach(b=>{
+        b.x += 5;
+        ctx.fillStyle = "yellow";
+        ctx.fillRect(b.x, b.y, 5, 5);
+    });
+
+    // enemies
+    enemies.forEach(e=>{
+        e.x -= 1;
+        ctx.fillStyle = "red";
+        ctx.fillRect(e.x, e.y, 20, 20);
+    });
+
+    // collision
+    bullets.forEach(b=>{
+        enemies.forEach(e=>{
+            if(b.x < e.x+20 && b.x+5 > e.x &&
+               b.y < e.y+20 && b.y+5 > e.y){
+                e.hp -= 20;
+            }
+        });
+    });
+
+    enemies = enemies.filter(e=> e.hp > 0 && e.x > 0);
+
+    requestAnimationFrame(gameLoop);
+}
+
+gameLoop();
+</script>
+
+</body>
+</html>
